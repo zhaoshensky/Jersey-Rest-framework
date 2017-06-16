@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jms="http://www.springframework.org/schema/jms"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.1.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-4.1.xsd
+        http://www.springframework.org/schema/jms
+        http://www.springframework.org/schema/jms/spring-jms-4.1.xsd"
+>
+    <!-- 真正可以产生Connection的ConnectionFactory，由对应的 JMS服务厂商提供 -->
+    <bean id="activeConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+
+        <property name="brokerURL" value="${jms.activemq.brokerURL}"/>
+        <property name="useAsyncSend" value="true"/>
+        <property name="optimizeAcknowledge" value="true"/>
+        <property name="optimizeAcknowledgeTimeOut" value="30000"/>
+        <property name="redeliveryPolicy.maximumRedeliveries" value="6"/>
+        <!-- <property name="tcpNoDelay" value="true"/> -->
+        <property name="alwaysSessionAsync" value="true"/>
+        <property name="useDedicatedTaskRunner" value="true"/>
+        <!-- <property name="trustAllPackages" value="true"/> -->
+    </bean>
+
+
+    <bean id="pooledConnectionFactory"
+             class="org.apache.activemq.pool.PooledConnectionFactory" init-method="start" destroy-method="stop">
+             <property name="maxConnections" value="500" />
+             <property name="connectionFactory" ref="activeConnectionFactory" />
+    </bean>
+    <!-- 配置JMS连接工长 -->
+    <bean id="connectionFactory"
+          class="org.springframework.jms.connection.CachingConnectionFactory">
+        <!-- 目标ConnectionFactory对应真实的可以产生JMS Connection的ConnectionFactory -->
+        <property name="targetConnectionFactory" ref="pooledConnectionFactory"></property>
+        <!-- <property name="sessionCacheSize" value="500"/> -->
+    </bean>
+
+    <!-- 定义消息队列（Queue） -->
+    <!--    <bean id="demoQueueDestination" class="org.apache.activemq.command.ActiveMQQueue">
+           设置消息队列的名字
+           <constructor-arg>
+               <value>sdc.demo</value>
+           </constructor-arg>
+       </bean> -->
+
+    <!-- 配置JMS模板（Queue），Spring提供的JMS工具类，它发送、接收消息。 -->
+    <bean id="jmsQueueTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="activeConnectionFactory"/>
+        <!--   <property name="defaultDestination" ref="demoQueueDestination" /> -->
+        <property name="receiveTimeout" value="10000"/>
+        <!-- true是topic，false是queue，默认是false，此处显示写出false -->
+        <property name="pubSubDomain" value="false"/>
+        <!-- deliveryMode, priority, timeToLive 的开关，要生效，必须配置为true，默认false-->
+        <property name="explicitQosEnabled" value="true"/>
+        <!-- 发送模式  DeliveryMode.NON_PERSISTENT=1:非持久 ; DeliveryMode.PERSISTENT=2:持久-->
+        <property name="deliveryMode" value="1"></property>
+        <!-- 发送非持久化消息需要配置explicitQosEnabled该属性为true  默认false-->
+        <!-- <property name="sessionAcknowledgeMode" value="1"/> -->
+        <!-- <property name="sessionTransacted" value="true"/> -->
+        <!-- 消息应答方式
+        Session.AUTO_ACKNOWLEDGE  消息自动签收
+        Session.CLIENT_ACKNOWLEDGE  客户端调用acknowledge方法手动签收
+        Session.DUPS_OK_ACKNOWLEDGE 不必必须签收，消息可能会重复发送
+        -->
+        <!-- <property name="sessionAcknowledgeModeName" value="AUTO_ACKNOWLEDGE"/> -->
+
+        <!-- 设置NON_PERSISTENT模式, 默认为PERSISTENT -->
+		  <!-- <property name="deliveryPersistent" value="false" /> -->
+		  <!-- 设置优先级, 默认为4 -->
+		  <property name="priority" value="9" />
+    </bean>
+
+    <!-- 配置JMS模板（Topic），Spring提供的JMS工具类，它发送、接收消息。 -->
+    <!--     <bean id="jmsTopicTemplate" class="org.springframework.jms.core.JmsTemplate">
+            <property name="connectionFactory" ref="connectionFactory" />
+            <property name="receiveTimeout" value="10000" />
+            true是topic，false是queue，默认是false，此处显示写出false
+            <property name="pubSubDomain" value="true" />
+        </bean> -->
+
+
+    <!-- **************************** -->
+    <!-- 在ActiveMQ上配置的队列DemoQueue -->
+    <bean id="demoQueue"
+          class="org.apache.activemq.command.ActiveMQQueue">
+        <!-- 每秒消费者处理数据总量  慢消费者，这里可设置为1 -->
+        <constructor-arg index="0">
+            <value>sdc.demo?consumer.prefetchSize=10</value>
+        </constructor-arg>
+    </bean>
+
+    <!-- JMS 消息发送者 ,用于给DemoQueue发送消息 -->
+    <bean id="jmsSenderDemoQueue"
+          class="com.sdc.system.spring.jms.activeMQ.queue.MyJmsSender">
+        <property name="jmsTemplate" ref="jmsQueueTemplate"/>
+        <property name="destination" ref="demoQueue"/>
+    </bean>
+
+    <!-- MDP:用于接收DemoQueue上的消息 -->
+    <bean id="demoQueueListener" class="com.sdc.system.spring.jms.activeMQ.queue.consumer.DemoQueueListener"/>
+
+    <!-- JMS 消息监听容器,Spring容器启动后自行监听DemoQueue,有消息后会交给DemoQueueListener处理 -->
+    <jms:listener-container container-type="default" connection-factory="connectionFactory" acknowledge="auto">
+         <jms:listener destination="MessageQueue" ref="demoQueueListener"/>
+    </jms:listener-container>
+    <bean id="MessageListenerDemoQueue"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="connectionFactory"/>
+        <property name="concurrentConsumers" value="1"/>
+        <property name="destination" ref="demoQueue"/>
+        <property name="messageListener" ref="demoQueueListener"/>
+    </bean>
+    <!-- **************************** -->
+
+   
+</beans>
+ 

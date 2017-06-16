@@ -1,0 +1,673 @@
+-- sdc数据库    表、字段添加记录   
+
+-- core_member表添加card_active_time字段 会员卡激活时间            封宁进   2017-2-8 
+		alter table core_member add card_active_time timestamp  Null;
+-- 添加core_member_level表 会员等级表           封宁进 2017-2-9
+		CREATE TABLE `core_member_level` (
+		  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+		  `supplier_id` bigint(20) NOT NULL COMMENT '商户ID',
+		  `member_level` tinyint(4) NOT NULL COMMENT '会员级别0到10，0代表通用',
+		  `level_name` varchar(20) DEFAULT NULL COMMENT '会员级别名称',
+		  `on_off` tinyint(2) NOT NULL COMMENT '1开2关',
+		  `member_card_path` varchar(255) DEFAULT NULL COMMENT '会员卡样式',
+		  `upgrade_order_num` int(11) DEFAULT NULL COMMENT '升级条件，订单总数',
+		  `upgrade_expends` decimal(12,2) DEFAULT NULL COMMENT '升级条件，累计消费金额',
+		  `upgrade_order_expends` decimal(12,2) DEFAULT NULL COMMENT '升级条件，消费金额和订单数',
+		  `upgrade_points` int(11) DEFAULT NULL COMMENT '升级条件，积分数',
+		  `upgrade_products` varchar(255) DEFAULT NULL COMMENT '升级条件：指定商品，商品ID，多个商品用“,”分割',
+		  `privilege_discount` decimal(12,2) DEFAULT NULL COMMENT '会员特权，折扣',
+		  `privilege_free_delivery` tinyint(4) DEFAULT NULL COMMENT '会员特权，是否包邮',
+		  `operator_id` int(11) NOT NULL COMMENT '操作人id',
+		  `description` text COMMENT '会员等级说明',
+		  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '添加时间',
+		  `update_at` datetime DEFAULT NULL COMMENT '修改时间',
+		  PRIMARY KEY (`id`)
+		) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8 COMMENT='会员级别设置表';
+-- 添加 core_member_level_describe表 会员等级描述表       封宁进   2017-2-9
+		CREATE TABLE `core_member_level_describe` (
+		  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+		  `conditiontype` tinyint(2) DEFAULT NULL COMMENT '条件设置 1 消费总金额  2 ；累计积分',
+		  `description` text COMMENT '会员等级描述',
+		  `supplier_id` bigint(20) NOT NULL COMMENT '商户id',
+		  `operator_id` int(11) NOT NULL COMMENT '操作人id',
+		  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
+		  `update_at` timestamp NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间',
+		  `on_off` tinyint(2) NOT NULL COMMENT '1开2关',
+		  PRIMARY KEY (`id`)
+		) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+-- core_member表添加town字段 乡、镇            封宁进   2017-2-8 
+        alter table core_member add town varchar(50)  Null;
+        
+        
+--会员卡表 core_member_card   王峰 2017-02-14
+CREATE TABLE `core_member_card` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `supplier_id` bigint(20) NOT NULL COMMENT '商户ID',
+  `member_level_id` tinyint(4) DEFAULT NULL COMMENT '会员级别0到10，0代表通用',
+  `member_card_name` varchar(20) NOT NULL COMMENT '会员卡名称',
+  `member_card_type_id` bigint(20) NOT NULL COMMENT '会员卡类型id',
+  `member_card_type_name` varchar(20) DEFAULT NULL COMMENT '会员卡类型名称 1：普通会员卡; 2：储值会员卡',
+  `on_off` tinyint(2) DEFAULT NULL COMMENT '1开2关',
+  `description` text COMMENT '使用须知',
+  `customer_telephone` varchar(11) NOT NULL COMMENT '客服电话',
+  `operator_id` int(11) NOT NULL COMMENT '操作人id',
+  `card_picture_path` varchar(50) DEFAULT NULL COMMENT '会员卡图片路径',
+  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '添加时间',
+  `update_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '修改时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='会员卡表';
+
+--会员卡样式表  王峰 2017-02-14
+CREATE TABLE `core_member_card_type` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `supplier_id` bigint(20) NOT NULL COMMENT '商户ID',
+  `operator_id` int(11) DEFAULT NULL COMMENT '操作人id',
+  `member_card_type_name` varchar(20) DEFAULT NULL COMMENT '会员卡类型名称 1：普通会员卡; 2：储值会员卡',
+  `send_wechat` tinyint(2) NOT NULL COMMENT '同步发布至微信卡包：1.是2.否',
+  `card_validity` varchar(20) DEFAULT NULL COMMENT '有效期1：永久有效',
+  `active_settings` tinyint(2) NOT NULL COMMENT '激活设置：1.需要激活2.无需激活',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '添加时间',
+  `update_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COMMENT='会员卡类型表';
+--会员卡电话薄表  封宁进 2017-02-14
+CREATE TABLE `core_member_phone` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `supplier_id` bigint(20) NOT NULL,
+  `member_id` bigint(20) NOT NULL,
+  `contact_phone` varchar(50) NOT NULL,
+  `table_source` tinyint(4) NOT NULL COMMENT '电话数据来源：1.飞鹤',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- 会员卡样式表更新两个字段  王峰 2017-02-14
+alter table core_member_card_type MODIFY send_wechat varchar(20); 
+
+alter table core_member_card_type MODIFY active_settings varchar(20); 
+
+--以上sql语句已经在 飞鹤正式sdc同步完毕   封宁进 2017-2-14 10：58
+
+-- 删除会员卡表字段 on_off  王峰 2017-02-14 
+alter table core_member_card drop column on_off
+
+-- 在会员类型表中添加字段 on_off 王峰 2017-02-14 15：50
+alter table core_member_card_type  add column on_off varchar(10);
+
+-- 在会员卡表添加字段 privilege_description  王峰 2017-02-16 13:51 
+alter table core_member_card add column privilege_description text ;
+
+-- 在商品表添加字段     贾程浩 2017-2-17 11:35
+ALTER TABLE `core_product`
+ADD COLUMN `outer_id`  varchar(50) NULL COMMENT '商家编码' AFTER `goods_code`,
+ADD COLUMN `weight`  varchar(20) NULL COMMENT '商品重量' AFTER `image_url`,
+ADD COLUMN `status`  tinyint(4) NOT NULL COMMENT '状态：1-上架，2-下架，3-冻结，4-临时，5-赠品' AFTER `price`;
+MODIFY COLUMN `brand_id`  bigint(20) NULL DEFAULT NULL COMMENT '品牌ID' AFTER `size_contrast_id`;
+
+
+-- 在商品类目表里添加字段      贾程浩 2017-2-17 11:35
+ALTER TABLE `core_product_cat`
+ADD COLUMN `source`  tinyint(4) NOT NULL COMMENT '来源1点开' AFTER `out_cat_parent_id`,
+ADD COLUMN `updated_at`  datetime NOT NULL COMMENT '更新时间' AFTER `created_at`;
+
+-- 修改商品类目表及商品表字段类型   李利赓 2017-03-16 14:11
+ALTER TABLE `core_product_cat` MODIFY COLUMN `out_cat_id` varchar(20);
+ALTER TABLE `core_product` MODIFY COLUMN `outer_product_id` varchar(20);
+ALTER TABLE `core_style`
+ADD COLUMN `source`  tinyint(4) COMMENT '来源1点开2飞鹤' AFTER `operator_id`;
+
+-- 修改商品表字段，添加series_id   李利赓 2017-03-23 15:31 修改数据库脚本
+ALTER TABLE `core_product`
+MODIFY COLUMN `outer_product_id` varchar(20),
+ADD COLUMN `series_id` bigint(20) COMMENT '飞鹤产品系列id' AFTER `cid`;
+
+-- 修改商品sku表中out_sku_id类型 李利赓 2017-03-23 15:31 
+ALTER TABLE `core_product_sku`
+MODIFY COLUMN `out_sku_id` varchar(20) COMMENT '外部sku_id';
+
+
+--在商品品牌表里添加字段      贾程浩 2017-2-17 11:35
+ALTER TABLE `core_product_brand`
+MODIFY COLUMN `created_at`  timestamp NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间' AFTER `brand_name`,
+ADD COLUMN `source`  tinyint(4) NOT NULL COMMENT '来源1:点开' AFTER `brand_name`,
+ADD COLUMN `updated_at`  timestamp NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间' AFTER `created_at`;
+
+--修改商品sku表字段      贾程浩 2017-2-17 11:35   云聚上执行失败了
+ALTER TABLE `core_product_sku`
+DROP COLUMN `style1_id`,
+DROP COLUMN `style1_value`,
+DROP COLUMN `style2_id`,
+DROP COLUMN `style2_value`,
+DROP COLUMN `style3_id`,
+DROP COLUMN `style3_value`,
+MODIFY COLUMN `updated_at`  timestamp NOT NULL COMMENT '修改时间' AFTER `attachment_id`,
+MODIFY COLUMN `created_at`  timestamp NOT NULL COMMENT '创建时间' AFTER `updated_at`,
+ADD COLUMN `style_ids`  varchar(20) NULL COMMENT '商品规格ids' AFTER `barcode`;
+ADD COLUMN `source`  tinyint(4) NOT NULL COMMENT '来源1：点开对接' AFTER `barcode`;  
+
+
+--创建商品规格表      贾程浩 2017-2-17 11:35 
+CREATE TABLE `core_style` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `style_name` varchar(100) NOT NULL COMMENT '规格名称',
+  `parent_id` int(11) NOT NULL COMMENT '父节点',
+  `is_delete` tinyint(4) NOT NULL DEFAULT '0' COMMENT '0未删除，1已删除',
+  `operator_id` bigint(20) NOT NULL DEFAULT '0' COMMENT '操作人id，0表示为系统对接',
+  `created_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
+  `updated_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--创建商户token表      贾程浩 2017-2-17 11:35
+CREATE TABLE `core_supplier_token` (
+  `id` int(20) NOT NULL AUTO_INCREMENT COMMENT '商户token',
+  `supplier_id` bigint(20) NOT NULL,
+  `token` varchar(50) NOT NULL COMMENT '授权的token',
+  `created_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
+  `updated_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--修改商户token表       贾程浩2017-2-22 19:59
+ALTER TABLE `core_supplier_token`
+CHANGE COLUMN `source` `application`  tinyint(4) NOT NULL COMMENT '应用1：点开' AFTER `token`,
+ADD COLUMN `public_key`  varchar(50) NOT NULL AFTER `supplier_id`,
+ADD COLUMN `secret`  varchar(50) NOT NULL AFTER `public_key`,
+ADD COLUMN `expire_time`  timestamp NOT NULL ON UPDATE CURRENT_TIMESTAMP AFTER `application`;
+--商户token表添加字段      贾程浩 2017-2-20 13:54     
+ALTER TABLE `core_supplier_token`
+ADD COLUMN `source`  tinyint(4) NOT NULL COMMENT '来源1：点开对接' AFTER `token`;
+
+-- department 表 name长度设置为200 
+-- staff 表中加一个字段staff_outer_id
+alter table core_staff add staff_outer_id varchar(50)  Null;
+-- department 表 name长度设置为200 
+--以上sql语句已经在 飞鹤正式sdc同步完毕   封宁进 2017-2-20 12：54 106.37.227.167
+
+
+-- staff 表中加一个字段staff_source
+alter table core_staff add staff_source tinyint(3)  Null;
+-- core_member表添加member_outer_id字段 外部会员id主键            封宁进   
+		alter table core_member add member_outer_id varchar(40)  Null;
+--以上sql语句已经在 飞鹤正式sdc同步完毕   封宁进 2017-2-27 19：11
+
+-- 创建订单支付信息表    贾程浩  2017-3-3 14:26
+CREATE TABLE `core_order_payinfo` (
+  `id` bigint(20) NOT NULL,
+  `name` varchar(20) NOT NULL,
+  `other_pay_sn` varchar(50) DEFAULT NULL,
+  `order_sn` varchar(50) DEFAULT NULL,
+  `out_order_sn` varchar(50) NOT NULL,
+  `pay_money` decimal(5,3) NOT NULL DEFAULT '0.000',
+  `pay_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+
+--创建会员宝宝信息表   毛丽霞  2017-03-09
+CREATE TABLE `core_member_baby` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `member_id` bigint(20) NOT NULL COMMENT '会员ID',
+  `supplier_id` bigint(20) NOT NULL COMMENT '商户ID',
+  `baby_name` varchar(50) DEFAULT NULL COMMENT '宝宝名称',
+  `province` varchar(50) DEFAULT NULL COMMENT '省',
+  `city` varchar(50) DEFAULT NULL COMMENT '市',
+  `district` varchar(50) DEFAULT NULL COMMENT '区',
+  `baby_birthday` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '宝宝生日',
+  `gender` tinyint(4) DEFAULT NULL COMMENT '性别：1男2女3未知',
+  `fetus_time` tinyint(4) DEFAULT NULL COMMENT '第几胎',
+  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
+  `updated_at` timestamp NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+--core_member_feihe 
+CREATE TABLE `core_member_feihe` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `supplier_id` bigint(20) NOT NULL COMMENT '商户ID',
+  `auth_key` varchar(50) CHARACTER SET utf8 DEFAULT NULL COMMENT '用户唯一表示',
+  `nick_name` varchar(100) CHARACTER SET utf8 DEFAULT NULL COMMENT '昵称',
+  `wx_number` varchar(255) CHARACTER SET utf8 DEFAULT NULL COMMENT '微信号',
+  `name_remark` varchar(100) CHARACTER SET utf8 DEFAULT NULL COMMENT '用户名备注',
+  `head_img` text CHARACTER SET utf8 COMMENT '头像',
+  `name` varchar(100) CHARACTER SET utf8 DEFAULT NULL COMMENT '用户名',
+  `mobile` bigint(15) DEFAULT NULL COMMENT '手机号码',
+  `birthday` timestamp NULL DEFAULT NULL COMMENT '生日',
+  `email` varchar(100) CHARACTER SET utf8 DEFAULT NULL COMMENT '邮箱',
+  `qq` varchar(20) CHARACTER SET utf8 DEFAULT NULL COMMENT 'QQ号码 ',
+  `gender` tinyint(4) DEFAULT '3' COMMENT '性别：1男2女3未定义',
+  `country` varchar(50) CHARACTER SET utf8 DEFAULT NULL COMMENT '国家',
+  `province` varchar(50) CHARACTER SET utf8 DEFAULT NULL COMMENT '省',
+  `city` varchar(50) CHARACTER SET utf8 DEFAULT NULL COMMENT '市',
+  `district` varchar(50) CHARACTER SET utf8 DEFAULT NULL COMMENT '区',
+  `town` varchar(50) DEFAULT NULL COMMENT '镇',
+  `address` varchar(255) CHARACTER SET utf8 DEFAULT NULL COMMENT '详细地址',
+  `source` varchar(255) CHARACTER SET utf8 DEFAULT NULL COMMENT '用户来源渠道，0：wechat；1：excel；2：app；3：系统对接；4：用户注册',
+  `is_trade` tinyint(4) DEFAULT NULL COMMENT '是否交易，默认0，1表示该用户交易过',
+  `follow_id` bigint(20) DEFAULT '0' COMMENT '主账号ID',
+  `temp_staff_id` bigint(20) DEFAULT '0' COMMENT '最新所属导购ID',
+  `follow_staff_id` bigint(20) DEFAULT '0' COMMENT '所属导购ID-固定',
+  `follow_department_id` bigint(20) DEFAULT '0' COMMENT '所属部门ID-固定',
+  `is_follow_mp` tinyint(1) DEFAULT '0' COMMENT '是否已经关注微信公众号，0：未关注；1：已关注；2：已跑路',
+  `follow_at` datetime DEFAULT NULL COMMENT '关注时间',
+  `unfollow_at` datetime DEFAULT NULL COMMENT '取消关注时间',
+  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
+  `updated_at` timestamp NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间',
+  `member_lever_id` bigint(11) DEFAULT NULL COMMENT '会员等级级别1-6',
+  `member_card_number` varchar(255) CHARACTER SET utf8 DEFAULT NULL COMMENT '会员卡号',
+  `card_active_time` timestamp NULL DEFAULT NULL,
+  `member_outer_id` bigint(40) DEFAULT NULL COMMENT '外部确定唯一id',
+  `status` tinyint(2) DEFAULT '1' COMMENT '标识该条数据是否已经存放到主表中1:可查 0:不可查',
+  PRIMARY KEY (`id`),
+  KEY `supplier_id` (`supplier_id`) USING BTREE,
+  KEY `auth_key` (`auth_key`) USING BTREE,
+  KEY `mobile` (`mobile`) USING BTREE,
+  KEY `follow_id` (`follow_id`) USING BTREE,
+  KEY `status` (`status`) USING BTREE,
+  KEY `member_outer_id` (`member_outer_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='会员池表_过滤前';
+
+`shop_url` varchar(100) NOT NULL,
+`sys_url` varchar(100) NOT NULL,
+
+--以上sql语句已经在 飞鹤正式sdc同步完毕   封宁进 2017-3-14 20：27
+-- 创建商品系列表  core_product_series fengnj
+CREATE TABLE `core_product_series` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `supplier_id` bigint(20) NOT NULL COMMENT '商户id',
+  `out_series_id` varchar(50) DEFAULT NULL COMMENT '外部分类id',
+  `source` tinyint(4) NOT NULL COMMENT '来源1点开',
+  `status` tinyint(4) DEFAULT '0' COMMENT '状态：0正常',
+  `is_delete` tinyint(4) DEFAULT '0' COMMENT '0可用  1已删除',
+  `operator_id` bigint(20) DEFAULT '0' COMMENT '登录人id',
+  `name` varchar(255) NOT NULL COMMENT '分类名称',
+  `created_at` datetime DEFAULT NULL COMMENT '创建时间',
+  `updated_at` datetime NOT NULL COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+-- core_member表的is_trade设置默认值0
+ALTER TABLE `core_member`
+MODIFY COLUMN `is_trade`  tinyint(4) NULL DEFAULT 0 COMMENT '是否交易，默认0，1表示该用户交易过' AFTER `source`;
+
+创建商户申请门店数-毛丽霞
+CREATE TABLE `core_apply_shop` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `supplier_id` int(11) NOT NULL COMMENT '商户id',
+  `apply_num` int(11) NOT NULL COMMENT '申请数量',
+  `apply_operator_id` int(11) NOT NULL COMMENT '申请人',
+  `apply_updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '申请创建时间',
+  `apply_remark` text NOT NULL COMMENT '申请备注',
+  `pay_status` tinyint(4) NOT NULL COMMENT '支付状态  0 未支付 1已支付',
+  `pay_money` decimal(9,2) NOT NULL COMMENT '实际支付金额',
+  `status` tinyint(4) NOT NULL COMMENT '申请状态  1审核中 2 取消申请  3 审核通过  4 审核拒绝',
+  `check_remark` text COMMENT '审核备注',
+  `check_admin_id` int(11) DEFAULT NULL COMMENT '审核操作人id',
+  `check_admin_name` varchar(60) DEFAULT NULL COMMENT '审核操作人名称',
+  `check_updated_at` timestamp NULL DEFAULT NULL COMMENT '审核时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+-- 修改core_member的source字段类型
+ALTER TABLE `core_member`
+MODIFY COLUMN `source`  tinyint(4) NULL DEFAULT NULL COMMENT '用户来源渠道，0：wechat；1：excel；2：app；3：系统对接；4：用户注册' AFTER `address`;
+-- 部门表core_department里添加code字段
+alter table core_department  add column code varchar(40);
+
+
+ALTER TABLE `core_member`
+MODIFY COLUMN `source`  tinyint(4) NULL DEFAULT NULL COMMENT '用户来源渠道，0：wechat；1：excel；2：app；3：系统对接；4：用户注册' AFTER `address`;
+
+
+
+------黄颀洪   评论表更改字段名
+ALTER TABLE `core_product_appraise`
+CHANGE COLUMN `product_id` `ticket_product_id`  bigint(20) NOT NULL COMMENT '商品ID' AFTER `supplier_id`;
+
+ALTER TABLE core_product_appraise ADD unique(`ticket_product_id`);
+
+ALTER TABLE `core_small_ticket`
+ADD COLUMN `is_return`  tinyint(2) NULL AFTER `unique_id`,
+ADD COLUMN `is_appraised`  tinyint(2) NULL AFTER `is_return`;
+
+
+
+-----黄颀洪 会员表新增字段
+ALTER TABLE `core_member`
+ADD COLUMN `identity`  tinyint(2) NULL COMMENT '会员身份' AFTER `member_outer_id`;
+
+ALTER TABLE `core_member`
+MODIFY COLUMN `identity`  tinyint(2) NULL DEFAULT NULL COMMENT '会员身份 [\'0\'=>\'未知\',\'1\'=>\'宝妈\',\'2\'=>\'宝爸\',\'3\'=>\'孕妇\',\'4\'=>\'其他亲属\']' AFTER `member_outer_id`;
+
+ALTER TABLE `core_staff`
+ADD COLUMN `staff_outer_depart_id`  varchar(50) NULL COMMENT '虚拟门店外部id' AFTER `staff_outer_id`;
+
+--毛丽霞
+ALTER TABLE `core_staff`
+ADD COLUMN `remark`  varchar(100) NULL COMMENT '备注' AFTER `staff_source`;
+
+
+
+------李利赓 2017-04-13 9:50 创建飞鹤渠道编码字典表
+CREATE TABLE `core_channel_code` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `outer_id` varchar(40) DEFAULT NULL,
+  `channel_field_name` varchar(21) DEFAULT NULL COMMENT '渠道字段名',
+  `field_no` varchar(20) DEFAULT NULL COMMENT '字段编号',
+  `field_name` varchar(100) DEFAULT NULL COMMENT '字段名',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+------李利赓 2017-04-17 13:50 修改core_staff表字段staff_outer_depart_id长度为100
+ALTER TABLE `core_staff`
+Modify COLUMN `staff_outer_depart_id`  varchar(100) NULL COMMENT '虚拟门店外部id' AFTER `staff_outer_id`;
+
+
+
+
+-- core_member表source来源备注修改 --贾程浩
+ALTER TABLE `core_member`
+MODIFY COLUMN `source`  tinyint(4) NULL DEFAULT NULL COMMENT '用户来源渠道，0：wechat；1：excel；2：app；3：系统对接；4：用户注册；大于10的也是微信' AFTER `address`;
+
+--core_apply_shop表添加updated_at更新时间字段-毛丽霞
+ALTER TABLE `core_apply_shop`
+ADD COLUMN `updated_at`  TIMESTAMP NULL COMMENT '更新时间' AFTER `check_updated_at`;
+
+
+
+--core_order_product表添加return_num退货数量-毛丽霞
+ALTER TABLE `core_order_product`
+ADD COLUMN `return_num`  INT NULL COMMENT '退货数量' AFTER `logistics_company_name`;
+
+--core_staff表添加post_id岗位职称id-封宁进
+ALTER TABLE `core_staff` ADD `post_id` BIGINT(20) NULL COMMENT '岗位职称id' AFTER `remark`;
+--core_order_info更新表备注 is_return --毛丽霞
+ALTER TABLE core_order_info
+MODIFY COLUMN is_return  TINYINT(4) NULL DEFAULT NULL  COMMENT '是否退款0未退款1已退款2部分退款';
+
+-- 创建地址库表  贾程浩   2017-4-24 11:46:29
+CREATE TABLE `core_member_address` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `supplier_id` bigint(20) NOT NULL COMMENT '商户id',
+  `member_id` bigint(20) NOT NULL,
+  `province_code` int(11) NOT NULL COMMENT '省code',
+  `province` varchar(255) NOT NULL,
+  `city_code` int(11) NOT NULL COMMENT '市code',
+  `city` varchar(255) NOT NULL,
+  `district_code` int(11) NOT NULL COMMENT '区code',
+  `district` varchar(255) NOT NULL COMMENT '区',
+  `address` varchar(255) NOT NULL COMMENT '详情地址',
+  `consignee` varchar(60) NOT NULL COMMENT '收件人信息',
+  `consignee_mobile` varchar(20) NOT NULL COMMENT '收件人手机号',
+  `is_default` tinyint(4) NOT NULL COMMENT '默认地址：0不是1是',
+  `is_delete` tinyint(4) NOT NULL COMMENT '0正常1已删除',
+  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `supplier_id` (`supplier_id`),
+  KEY `member_id` (`member_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=351 DEFAULT CHARSET=utf8;
+
+-- core_order_info  贾程浩 2017-4-24 13:34:05
+创建单列索引：order_at, member_id
+-- core_order_info  贾程浩 2017-4-24 13:34:05
+创建单列索引：order_at, member_id
+
+
+
+---修改订单表备注
+ALTER TABLE `core_order_info`
+MODIFY COLUMN `order_delivery_status`  tinyint(4) NULL DEFAULT NULL COMMENT '订单发货状态：0未发货 1已发货 2已签收 3客户拒签' AFTER `pay_status`;
+
+--增加首次下单时间字段-毛丽霞
+ALTER TABLE core_member_extend
+ADD COLUMN first_trade_time DATETIME NULL COMMENT '首次下单时间' AFTER updated_at;
+
+--更新out_sku_id的类型为varchar  -毛丽霞
+ALTER TABLE `core_order_product`
+MODIFY COLUMN out_sku_id  VARCHAR(20) COMMENT '外部sku_id';
+
+
+--以上sql语句已经在 飞鹤正式同步完毕   封宁进 2017-4-18 21：14
+--部门表里加一个部门类型字段
+ALTER TABLE `core_department`
+ADD COLUMN `department_type`  tinyint(4)  NULL COMMENT '1、无导门店 2.有导门店' AFTER `code`;
+--机构代码表 --封宁进  
+CREATE TABLE `core_staff_org_code` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `supplier_id` bigint(20) NOT NULL,
+  `staff_id` bigint(20) NOT NULL,
+  `onecode` varchar(50) DEFAULT NULL COMMENT '一级code',
+  `onecodename` varchar(100) DEFAULT NULL COMMENT '一级code名字',
+  `twocode` varchar(50) DEFAULT NULL COMMENT '二级code',
+  `twocodename` varchar(100) DEFAULT NULL COMMENT '二级code名字',
+  `threecode` varchar(50) DEFAULT NULL COMMENT '三级code',
+  `threecodename` varchar(100) DEFAULT NULL COMMENT '三级code名字',
+  `fourcode` varchar(50) DEFAULT NULL COMMENT '四级code',
+  `fourcodename` varchar(100) DEFAULT NULL COMMENT '四级code名字',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8861 DEFAULT CHARSET=utf8;
+
+
+--毛丽霞
+ALTER TABLE `core_supplier_token`
+ADD COLUMN `source` TINYINT(4) NULL COMMENT '来源:1.商户申请，2.admin端指定' AFTER `operator_name` ;
+--将原有的数据source更改为1
+UPDATE core_supplier_token SET source = 1 WHERE source IS NULL;
+--员工表中增加头像字段
+ALTER TABLE `core_staff`
+ADD COLUMN `head_img` VARCHAR(100) NULL COMMENT '头像' AFTER `post_id` ;
+
+--2017/5/4  core_member 增加字段
+ALTER TABLE `core_member`
+ADD COLUMN `temp_time`  timestamp NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '修改绑定临时导购的时间，用于会员重新分配时候用' AFTER `temp_staff_id`;
+--2017/5/10  core_member 增加字段
+ALTER TABLE `core_member`
+ADD COLUMN `binding_time`  timestamp NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '绑定手机号的时间' AFTER `mobile`;
+
+
+--2017/5/17 core_coupon_limit_products huangqh
+ALTER TABLE `core_coupon_limit_products`
+DROP COLUMN `product_outer_id`,
+ADD COLUMN `product_outer_id`  varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '商品外部id' AFTER `product_id`;
+--以上sql语句已经在 飞鹤正式同步完毕   封宁进 2017-5-15 17：00
+1、core_small_ticket、core_ticket_goods_detail未同步 因为飞鹤用不到
+2、core_staff 联合索引问题：supplier_id is_delete mobile 未同步因为飞鹤用不到
+ALTER TABLE `core_small_ticket`
+ADD COLUMN `is_return`  tinyint(2) NULL AFTER `unique_id`,
+ADD COLUMN `is_appraised`  tinyint(2) NULL AFTER `is_return`;
+-- 没有影响
+ALTER TABLE `core_member_feihe`
+ADD COLUMN `identity`  tinyint(2) NULL AFTER `status`;
+--员工表中增加头像字段
+ALTER TABLE `core_staff`
+ADD COLUMN `head_img` VARCHAR(100) NULL COMMENT '头像' AFTER `post_id` ;
+
+--李利赓  2017-05-15 start 
+CREATE TABLE `core_district_sales_feihe` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `supplier_id` bigint(20) NOT NULL COMMENT '商户ID',
+  `date` timestamp NULL DEFAULT NULL,
+  `department_id` bigint(20) DEFAULT '0',
+  `department_name` varchar(200) DEFAULT NULL,
+  `current_sale` bigint(20) DEFAULT '0',
+  `cumulative_sale` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `date` (`date`)
+) ENGINE=InnoDB AUTO_INCREMENT=4713 DEFAULT CHARSET=utf8;
+
+ALTER TABLE `core_district_sales_feihe` ADD INDEX date ( `date` );
+
+ALTER table core_member_extend ADD COLUMN `avg_repurchase_cycle` FLOAT NULL Default 0,ADD COLUMN r_score INT NULL Default 0
+
+--李利赓  2017-05-15 end
+
+--core_order_product表添加索引 product_id  贾程浩  2017-5-17 10:58:55
+--封宁进 2017-05-18 start
+CREATE TABLE `core_distributor` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '经销商id',
+  `supplier_id` bigint(20) DEFAULT NULL,
+  `distributor_name` varchar(200) DEFAULT NULL COMMENT '经销商名称',
+  `region_code` varchar(50) DEFAULT NULL COMMENT '销售区域编号',
+  `market_code` varchar(50) DEFAULT NULL COMMENT '销售省区编号',
+  `organizecity` varchar(100) DEFAULT '' COMMENT '管理片区',
+  `officalcity` varchar(255) DEFAULT NULL COMMENT '行政城市id',
+  `activeflag` varchar(20) DEFAULT NULL COMMENT '活跃标志',
+  `district_code` varchar(100) DEFAULT NULL COMMENT '销售省区编号',
+  `distributor_code` varchar(100) DEFAULT '0' COMMENT '经销商编码',
+  `created_at` timestamp NULL DEFAULT '0000-00-00 00:00:00' COMMENT '加入时间',
+  `updated_at` timestamp NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6977 DEFAULT CHARSET=utf8;
+--封宁进 2017-05-18 end
+--员工表中增加头像字段
+ALTER TABLE `core_staff`
+ADD COLUMN `head_img` VARCHAR(100) NULL COMMENT '头像' AFTER `post_id` ;
+--李利赓2017-05-20 start
+修改test下mongo.properties文件，添加scrm_mongo连接配置用于关键字分析
+--李利赓2017-05-20 end
+
+
+
+
+--core_department表增加字段    贾程浩  2017-5-25 11:11:25
+ALTER TABLE `core_department`
+ADD COLUMN `phone`  varchar(20) NULL AFTER `department_type`,
+ADD COLUMN `mobile`  varchar(20) NULL AFTER `phone`;
+
+--core_department表增加字段    李利赓   2017-05-25 start
+ALTER TABLE `core_department` ADD COLUMN geotable_id bigint(20) NULL DEFAULT NULL COMMENT '百度LBS云存储ID'
+ALTER TABLE `core_member_extend` MODIFY COLUMN `avg_repurchase_cycle` FLOAT NULL Default 0 COMMENT '平均回购周期'
+ALTER TABLE `core_member_extend` MODIFY COLUMN `r_score` INT NULL Default 0 COMMENT '上次消费距现在天数'
+
+-- 修改report.properties属性，添加百度LBS开放云平台配置
+--李利赓2017-05-25 end
+
+--部门扩展表   贾程浩  2017-5-31 20:44:07
+CREATE TABLE `core_department_extend` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `supplier_id` bigint(20) NOT NULL,
+  `department_id` bigint(20) NOT NULL,
+  `photo_list` varchar(500) DEFAULT NULL COMMENT '图片列表，url 形式，可以有多张图片，尺寸为\r\n640*340px。必须为上一接口生成的url。图片内容不允许与门店不相关，不允许为二维码、员工合照（或模特肖像）、营业执照、无门店正门的街景、地图截图、公交地铁站牌、菜单截图等',
+  `recommend` text COMMENT '推荐品，餐厅可为推荐菜；酒店为推荐套房；景点为推荐游玩景点等，针对自己行业的推荐内容\r\n200字以内',
+  `special` text COMMENT '特色服务，如免费wifi，免费停车，送货上门等商户能提供的特色功能或服务',
+  `open_time` varchar(50) DEFAULT NULL COMMENT '营业时间，24 小时制表示，用“-”连接，如\r\n8:00-20:00',
+  `avg_price` int(20) DEFAULT NULL COMMENT '人均价格，大于0 的整数',
+  `operator_id` bigint(20) DEFAULT NULL COMMENT '操作人',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
+
+--以上sql语句已经在 飞鹤正式同步完毕   封宁进 2017-6-1 15：00
+1、core_small_ticket、core_ticket_goods_detail未同步 因为飞鹤用不到
+ALTER TABLE `core_small_ticket`
+ADD COLUMN `is_return`  tinyint(2) NULL AFTER `unique_id`,
+ADD COLUMN `is_appraised`  tinyint(2) NULL AFTER `is_return`;
+-- 没有影响
+ALTER TABLE `core_member_feihe`
+ADD COLUMN `identity`  tinyint(2) NULL AFTER `status`;
+-- core_order_info表   添加字段first_order  飞鹤新客首单标记   贾程浩 2017-5-31 15:04:57 
+ALTER TABLE `core_order_info`
+ADD COLUMN `first_order`  tinyint(4) NULL COMMENT '飞鹤购买指定商品的第一单标记' AFTER `profit_price`;
+-- core_product表添加字段product_dan、packing  封宁进 2017-6-5 16:17
+ALTER TABLE `core_product`
+ADD COLUMN `product_dan`  varchar(20) NULL AFTER `created_at`,
+ADD COLUMN `packing`  varchar(40) NULL AFTER `product_dan`;
+-- 添加表core_product_dan 封宁进 2017-6-5 16:17
+CREATE TABLE `core_product_dan` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `supplier_id` bigint(20) NOT NULL,
+  `code` varchar(100) NOT NULL COMMENT '段位编号',
+  `description` varchar(100) NOT NULL COMMENT '描述',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8 COMMENT='商品段位';
+
+--添加表core_product_packing  封宁进 2017-6-5 16:17
+CREATE TABLE `core_product_packing` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `supplier_id` bigint(20) NOT NULL,
+  `pack_code` varchar(100) NOT NULL COMMENT '包装编号',
+  `pack_description` varchar(100) NOT NULL COMMENT '包装描述',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8 COMMENT='商品包装';
+
+-- 李利赓 2017-06-05 start
+ALTER TABLE `core_member_extend`
+MODIFY COLUMN `r_score`  int(11) NULL DEFAULT NULL COMMENT '上次消费距现在天数' AFTER `avg_repurchase_cycle`;
+update `core_member_extend` set r_score = NULL
+
+-- 添加表用户画像表
+CREATE TABLE `core_member_profile` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '用户画像表主键',
+  `supplier_id` bigint(20) NOT NULL COMMENT '供应商ID',
+  `member_id` bigint(20) NOT NULL COMMENT '会员ID',
+  `max_money_paid_points` float DEFAULT '0' COMMENT '单次最大消费额-用户画像分值',
+  `avg_money_paid_points` float DEFAULT '0' COMMENT '平均消费额-用户画像分值',
+  `avg_repurchase_cycle_points` float DEFAULT '0' COMMENT '平均回购周期-用户画像分值',
+  `purchase_product_num_points` float DEFAULT '0' COMMENT '购买商品数-用户画像分值',
+  `last_consume_time_points` float DEFAULT '0' COMMENT 'R值-用户画像分值',
+  `avg_visit_times_points` float DEFAULT '0' COMMENT '平均回访次数-用户画像分值',
+  PRIMARY KEY (`id`),
+  KEY `member_id` (`member_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1572843 DEFAULT CHARSET=utf8;
+
+-- core_product_appraise商品评价表 添加字段    贾程浩  2017-6-8 14:38:35
+ALTER TABLE `core_product_appraise`
+MODIFY COLUMN `origin_from`  int(4) NOT NULL COMMENT '评价来源1为小票  2点开订单' AFTER `origin_sn`,
+MODIFY COLUMN `add_at`  timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '添加时间' AFTER `is_cancel`,
+ADD COLUMN `product_id`  bigint(20) NULL COMMENT 'SDC商品ID' AFTER `supplier_id`,
+ADD COLUMN `is_anonymity`  tinyint(4) NULL COMMENT '是否匿名：0否1是' AFTER `origin_from`;
+-- 添加供应商geotableId字典表
+CREATE TABLE `core_supplier_geo` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `supplier_id` bigint(20) DEFAULT NULL,
+  `geo_type` tinyint(4) DEFAULT NULL COMMENT '1、门店GEO表',
+  `geo_tableId` bigint(20) DEFAULT NULL COMMENT '百度LBS云存储geotable表ID',
+  `create_at` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
+  `operator_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+
+-- core_product_appraise商品评价表 添加字段    贾程浩  2017-6-9 14:46:11
+ALTER TABLE `core_product_appraise`
+ADD COLUMN `sku_size`  varchar(100) NULL AFTER `is_cancel`,
+ADD COLUMN `pic`  varchar(500) NULL AFTER `sku_size`;
+-- core_order_info表添加部门ID索引,提高查询统计效率
+ALTER TABLE `core_order_info` ADD INDEX(`department_id`);
+-- 李利赓 2017-06-05 end
+-- core_product商品表   添加字段    贾程浩  2017-6-8 14:53:35
+ALTER TABLE `core_product`
+ADD COLUMN `description`  text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '商品描述' AFTER `packing`,
+ADD COLUMN `guide`  text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '说明书' AFTER `description`,
+ADD COLUMN `spec`  text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '商品规格包装参数' AFTER `guide`;
+
+--core_style表   添加字段    贾程浩  2017-6-8 17:49:25
+ALTER TABLE `core_style`
+ADD COLUMN `parent_name`  varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '父级规格名称' AFTER `parent_id`;
+
+--以上sql语句已经在 飞鹤正式同步完毕   封宁进 2017-6-12 15：00
+1、core_small_ticket、core_ticket_goods_detail未同步 因为飞鹤用不到
+ALTER TABLE `core_small_ticket`
+ADD COLUMN `is_return`  tinyint(2) NULL AFTER `unique_id`,
+ADD COLUMN `is_appraised`  tinyint(2) NULL AFTER `is_return`;
+-- 没有影响
+ALTER TABLE `core_member_feihe`
+ADD COLUMN `identity`  tinyint(2) NULL AFTER `status`;
+
+--创建core_consignee表
+CREATE TABLE `core_consignee` (
+`id`  bigint(20) NOT NULL AUTO_INCREMENT ,
+`supplier_id`  bigint(20) NULL DEFAULT NULL ,
+`mobile`  varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '收件人手机号' ,
+`consignee`  varchar(60) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '收件人姓名' ,
+`province`  varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`city`  varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`district`  varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`detail_address`  varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`purchaser`  bigint(20) NULL DEFAULT NULL COMMENT '购买人' ,
+`member_id`  bigint(20) NULL DEFAULT NULL COMMENT '收货人对应的会员id ' ,
+`is_member`  tinyint(2) NULL DEFAULT NULL COMMENT '收货人是不是会员  0不是 1是' ,
+`is_purchaser`  tinyint(2) NULL DEFAULT NULL COMMENT '是不是购买者本人 0不是 1是' ,
+`order_id`  bigint(20) NULL DEFAULT NULL COMMENT '对应的订单id' ,
+`create_time`  timestamp NULL DEFAULT NULL ,
+`update_time`  timestamp NULL DEFAULT NULL ,
+PRIMARY KEY (`id`)
+)

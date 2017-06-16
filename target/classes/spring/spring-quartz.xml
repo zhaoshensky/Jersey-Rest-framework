@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"  
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"  
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans-4.0.xsd "> 
+    
+    <!-- 启动触发器的配置开始 -->
+    <!--  class="org.springframework.scheduling.quartz.SchedulerFactoryBean"> -->
+	<bean name="startQuertz" lazy-init="false" autowire="no"
+		class="com.sdc.system.spring.quartz.SchedulerFactoryBeanShutdownDelay">
+		<property name="triggers">
+			<list>
+				<ref bean="everySecondJobTrigger" />
+				<ref bean="everyMinuteJobTrigger" />
+				<ref bean="everyHourJobTrigger" />
+
+				<!-- <ref bean="ediankaiJobTrigger"/> -->
+			</list>
+		</property>
+		<!-- 延时启动，这个很重要，必须要有足够长的时间让你的应用先启动完成后再让 Scheduler启动， 
+		   这里设置60秒,如果你的应用启动时间较长，要相应增加startupDelay的时间--> 
+		   <!-- <property name="startupDelay" value="60"/> 
+		   <property name="overwriteExistingJobs" value="true" />  -->
+		</bean>
+	<!-- 启动触发器的配置结束 -->
+	
+	
+	
+	<!--quartz-2.x的配置  second -->
+	<bean id="everySecondJobTrigger"
+		class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail">
+			<ref bean="everySecondJob" />
+		</property>
+		<property name="cronExpression">
+			<!--every mintue  -->
+			<value>* * * * * ?</value>
+		</property>
+	</bean>
+	<!--调度的配置结束 -->
+	<!--工作的bean -->
+	<bean id="everySecondScheduling" class="com.sdc.scheduling.EverySecondScheduling" />
+	<!--job的配置开始 -->
+	<bean id="everySecondJob"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="everySecondScheduling" />
+		</property>
+		<property name="targetMethod">
+			<value>doScheduling</value>
+		</property>
+		<!--类似单例模式 -->
+		<property name="concurrent">  
+        	<value>false</value>  
+    	</property>
+	</bean>
+	<!--job的配置结束 -->
+	<!--quartz-2.x的配置  second -->
+	
+	
+	
+	<!--quartz-2.x的配置 mintue -->
+	<bean id="everyMinuteJobTrigger"
+		class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail">
+			<ref bean="everyMinuteJob" />
+		</property>
+		<property name="cronExpression">
+		
+			<value>0 * * * * ?</value>
+		</property>
+	</bean>
+	<!--调度的配置结束 -->
+	<!--工作的bean-->
+	<bean id="everyMinuteScheduling" class="com.sdc.scheduling.EveryMinuteScheduling" />
+	<!--job的配置开始 -->
+	<bean id="everyMinuteJob"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="everyMinuteScheduling" />
+		</property>
+		<property name="targetMethod">
+			<value>doScheduling</value>
+		</property>
+		<!--类似单例模式 -->
+		<property name="concurrent">  
+        	<value>false</value>  
+    	</property>
+	</bean>
+	<!--job的配置结束 -->
+	<!--quartz-2.x的配置 mintue -->
+	
+
+  <!--  quartz-2.x的配置  Hour -->
+	<bean id="everyHourJobTrigger"
+		class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail">
+			<ref bean="everyHourJob" />
+		</property>
+		<property name="cronExpression">
+			<value>0 0 * * * ?</value>
+		</property>
+	</bean>
+	<!--调度的配置结束 -->
+	<!--工作的bean-->
+	<bean id="everyHourScheduling" class="com.sdc.scheduling.EveryHourScheduling" />
+	<!--job的配置开始 -->
+	<bean id="everyHourJob"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="everyHourScheduling" />
+		</property>
+		<property name="targetMethod">
+			<value>doScheduling</value>
+		</property>
+		<!--类似单例模式 -->
+		<property name="concurrent">  
+        	<value>false</value>  
+    	</property>
+	</bean>
+	<!--job的配置结束 -->
+	<!--quartz-2.x的配置  Hour -->
+    
+</beans>  
